@@ -1,0 +1,36 @@
+---
+- name: "Configure Windows Server DNS settings"
+  hosts: all
+  vars:
+    az_dns: "168.63.129.16"
+    dns_zones:
+      - contoso.local
+      - blob.core.windows.net
+  tasks:
+    - name: "Install DNS role for Windows Server"
+      win_feature:
+        name: DNS
+        state: present
+      ignore_errors: true
+
+    - name: "Install RSAT including DNS Server Tools"
+      win_feature:
+        name: RSAT-DNS-Server
+        state: present
+      ignore_errors: true
+
+    - name: "Configure DNS standard forwarders to Azure DNS"
+      win_shell: |
+        Set-DnsServerForwarder -IPAddress "{{ az_dns }}"
+      ignore_errors: true
+      when: inventory_hostname == "az-dns-srv"
+
+    - name: "Create DNS conditional forwarding for contoso.local"
+      community.windows.win_dns_zone:
+        name: "{{ item }}"
+        type: forwarder
+        dns_servers:
+          - 10.20.0.4
+      loop: "{{ dns_zones }}"
+      when: inventory_hostname == "onprem-dns-srv"
+    
