@@ -351,6 +351,62 @@ resource "azurerm_network_security_group" "nsg" {
   resource_group_name = azurerm_resource_group.rg.name
 }
 
+resource "azurerm_network_security_rule" "allow_dns_in_tcp" {
+  access                      = "Allow"
+  destination_address_prefix  = "*"
+  destination_port_range      = "53"
+  direction                   = "Inbound"
+  name                        = "DNS-TCP"
+  network_security_group_name = azurerm_network_security_group.nsg.name
+  priority                    = 100
+  protocol                    = "Tcp"
+  resource_group_name         = azurerm_resource_group.rg.name
+  source_address_prefix       = "*"
+  source_port_range           = "*"
+}
+
+resource "azurerm_network_security_rule" "allow_dns_in_udp" {
+  access                      = "Allow"
+  destination_address_prefix  = "*"
+  destination_port_range      = "53"
+  direction                   = "Inbound"
+  name                        = "DNS-UDP"
+  network_security_group_name = azurerm_network_security_group.nsg.name
+  priority                    = 110
+  protocol                    = "Udp"
+  resource_group_name         = azurerm_resource_group.rg.name
+  source_address_prefix       = "*"
+  source_port_range           = "*"
+}
+
+resource "azurerm_network_security_rule" "allow_dns_out_tcp" {
+  access                      = "Allow"
+  destination_address_prefix  = "*"
+  destination_port_range      = "53"
+  direction                   = "Outbound"
+  name                        = "DNS-TCP"
+  network_security_group_name = azurerm_network_security_group.nsg.name
+  priority                    = 200
+  protocol                    = "Tcp"
+  resource_group_name         = azurerm_resource_group.rg.name
+  source_address_prefix       = "*"
+  source_port_range           = "*"
+}
+
+resource "azurerm_network_security_rule" "allow_dns_out_udp" {
+  access                      = "Allow"
+  destination_address_prefix  = "*"
+  destination_port_range      = "53"
+  direction                   = "Outbound"
+  name                        = "DNS-UDP"
+  network_security_group_name = azurerm_network_security_group.nsg.name
+  priority                    = 210
+  protocol                    = "Udp"
+  resource_group_name         = azurerm_resource_group.rg.name
+  source_address_prefix       = "*"
+  source_port_range           = "*"  
+}
+
 resource "azurerm_network_security_rule" "deny_rdp" {
   access                      = "Deny" # change this to "Allow" in case you need to manually connect to the VM
   destination_address_prefix  = "*"
@@ -365,7 +421,8 @@ resource "azurerm_network_security_rule" "deny_rdp" {
   source_port_range           = "*"
 }
 
-resource "azurerm_network_security_rule" "deny_ssh" {
+# required for ansible to work
+resource "azurerm_network_security_rule" "allow_ssh" {
   access                      = "Allow"
   destination_address_prefix  = "*"
   destination_port_range      = "22"
