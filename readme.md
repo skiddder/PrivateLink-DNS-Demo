@@ -1,13 +1,24 @@
 # Description
+The architecture of the deployment is very similar to the one described [here](https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-dns-integration#virtual-network-and-on-premises-workloads-using-a-dns-forwarder). The difference is, that this script does not use Azure Private Resolver but uses a Windows DNS server instead. All the configured forwardings can of course also achieved by using the Private Resolver. I chose this approach for people coming from on-prem to avoid having multiple new components at once and concentrating on the required DNS configuration.
+
 This script deploys a hub & spoke including a client VM in spoke-1 and a Windows-based DNS server in the hub. Additionally, a vnet is created to mimick onprem environment including a Windows based DNS server and a client for testing.
 As this environment demonstrates how to configure DNS for private link including onprem forwarding, a blob storage account gets created as well as a private endpoint and the private DNS zone including an A RECORD for the blob storage service.
-please note: The terraform currently does not include the configuration of the Windows based DNS servers.
+Configuration of the Windows based DNS servers is done using Ansible.
+
+# Prerequisites
+- bash shell
+- Azure CLI
+- terraform
+- ansible
+
 # Installation
 1. edit the start-config.sh file and provide the following values:
 
 | variable name   | description                        |
 |-----------------|------------------------------------|
-| admin_username  | local login account for all VMs    |
+| resource_group_name | Name of resource group where all resources get deployed to 
+| location        | Deployment location
+| admin_username  | local login account - same for all VMs    |
 | public_key      | public ssh key string for linux login. You can get it by executing the command 'cat ~/.ssh/rsa_id.pub'     |
 | admin_password  | password for local windows login   |
 
@@ -48,4 +59,7 @@ Address: 10.20.0.5
 - In the azurerm provider version used for deployment, you cannot set the 'fallback to Internet' option, yet. Hence, you might need to configure it manually on the azurerm_private_dns_zone_virtual_network_link object(s).
 
 - In case the linux dns clients are not configured out-of-the box to use the nameserver specified by the Azure Vnet, you can troubleshoot the settings as explained [here](https://learnubuntu.com/change-dns-server/). 
+
+# Next steps
+In order to expand the concept for additional privatelink zone, refer to [this learn page](https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-dns#commercial) for a list privatelink DNS zones and matching conditional forwarding configurations.
 
